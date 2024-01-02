@@ -19,10 +19,13 @@ def add_3dprinting_modifier(active_object):
 
 def add_nodes(node_tree):
     group_input_node = node_tree.nodes.new(type='NodeGroupInput')
-    
-    user_input_radius = bpy.types.NodeSocketFloatDistance()
-    group_input_node.outputs[0] = user_input_radius
+    node_tree.outputs.new('NodeSocketVector', 'Line Width')
     group_input_node.location = (-600, 0)
+    
+    combine_xyz_node = node_tree.nodes.new(type='ShaderNodeCombineXYZ')
+    combine_xyz_node.inputs[0].default_value = 1
+    combine_xyz_node.inputs[1].default_value = 1
+    combine_xyz_node.location = (-300, -200)
     
     collection_info_node = node_tree.nodes.new(type='GeometryNodeCollectionInfo')
     collection_info_node.location = (-300, 0)
@@ -33,10 +36,6 @@ def add_nodes(node_tree):
     
     curve_to_mesh_node = node_tree.nodes.new(type='GeometryNodeCurveToMesh')
     curve_to_mesh_node.location = (600, 0)
-    
-    vector_node = node_tree.nodes.new(type='FunctionNodeInputVector')
-    vector_node.vector = [1, 1, 0.2]
-    vector_node.location = (0, -400)
     
     mesh_circle_node = node_tree.nodes.new(type='GeometryNodeMeshCircle')
     mesh_circle_node.location = (0, -200)
@@ -54,6 +53,7 @@ def add_nodes(node_tree):
         node.select = False
 
     links = node_tree.links
+    links.new(group_input_node.outputs[0], combine_xyz_node.inputs[2])
     links.new(collection_info_node.outputs['Instances'], resample_curve_node.inputs['Curve'])
     links.new(resample_curve_node.outputs['Curve'], curve_to_mesh_node.inputs['Curve'])
     links.new(mesh_circle_node.outputs['Mesh'], transform_geometry_node.inputs['Geometry'])
